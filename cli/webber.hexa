@@ -50,6 +50,7 @@ fn cmd_help() {
     println("  webber list         Short index (emoji name — role)")
     println("  webber add <name>   Register ~/core/<name> (auto-detects emoji/role/remote)")
     println("                      flags: --path PATH  --force")
+    println("  webber rm <name>    Unregister a project (deletes web/<name>.yaml)")
     println("  webber --version    Print version")
     println("  webber --help       This message")
     println("")
@@ -179,6 +180,23 @@ fn cmd_add(args: [str]) {
     println("  → " + target)
 }
 
+fn cmd_rm(args: [str]) {
+    if len(args) < 1 {
+        eprintln("usage: webber rm <name>")
+        exit(2)
+    }
+    let name = args[0]
+    let target = WEB_DIR + "/" + name + ".yaml"
+    let exists = exec("test -f '" + target + "' && echo y || echo n").trim()
+    if exists != "y" {
+        eprintln("⬡ not registered: " + name)
+        exit(1)
+    }
+    exec("rm -f '" + target + "'")
+    println("⬡ removed: " + name)
+    println("  was: " + target)
+}
+
 // ─── main ───
 
 fn main() {
@@ -212,6 +230,13 @@ fn main() {
         let mut k = 1
         while k < n { sub_args = sub_args + [a[k]]; k = k + 1 }
         cmd_add(sub_args)
+        return
+    }
+    if sub == "rm" || sub == "remove" {
+        let mut sub_args: [str] = []
+        let mut k = 1
+        while k < n { sub_args = sub_args + [a[k]]; k = k + 1 }
+        cmd_rm(sub_args)
         return
     }
 

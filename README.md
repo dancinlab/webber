@@ -26,6 +26,7 @@ webber              # show usage
 webber cli          # aggregate `--help` of all registered projects (the main feature)
 webber list         # short index — emoji name — role
 webber add <name>   # register ~/core/<name> (auto-detects emoji/role/remote from README + git)
+webber rm <name>    # unregister (deletes web/<name>.yaml)
 webber --version
 ```
 
