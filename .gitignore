@@ -1,0 +1,12 @@
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.zed/
+.idea/
+*.log
+*.tmp
+
+state/*
+!state/.gitkeep

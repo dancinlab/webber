@@ -1,0 +1,7 @@
+name: canon
+emoji: 📐
+path: ~/core/canon
+role: Arithmetic Design Framework
+status: active
+remote: https://github.com/dancinlab/canon.git
+tags: [framework, math]

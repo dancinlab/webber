@@ -1,0 +1,38 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: webber/project.schema.yaml
+title: Webber Project Entry
+description: One standalone project under ~/core/
+
+type: object
+required: [name, path, role, status]
+additionalProperties: false
+
+properties:
+  name:
+    type: string
+    description: 프로젝트 디렉터리명 (~/core/<name>)
+  emoji:
+    type: string
+    description: 시각 식별자 (선택)
+  path:
+    type: string
+    description: 절대경로 또는 ~/core/ 기준 상대경로
+  role:
+    type: string
+    description: 한 줄 역할 설명
+  status:
+    type: string
+    enum: [active, archived, experimental, draft]
+  origin:
+    type: string
+    description: 분리 기원 (예 "hive에서 2026-05-07 분리")
+  depends_on:
+    type: array
+    items: { type: string }
+    description: 다른 webber 엔트리 name 참조
+  remote:
+    type: string
+    description: GitHub 등 원격 저장소 URL (선택)
+  tags:
+    type: array
+    items: { type: string }

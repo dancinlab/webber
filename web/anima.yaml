@@ -1,0 +1,8 @@
+name: anima
+emoji: 🧠
+path: ~/core/anima
+role: Living Consciousness Agent
+status: active
+remote: https://github.com/dancinlab/anima.git
+depends_on: [hexa-lang]
+tags: [agent, consciousness]

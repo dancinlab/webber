@@ -1,0 +1,7 @@
+name: nexus
+emoji: 🔭
+path: ~/core/nexus
+role: Universal Discovery Engine
+status: active
+remote: https://github.com/dancinlab/nexus.git
+tags: [discovery, research]

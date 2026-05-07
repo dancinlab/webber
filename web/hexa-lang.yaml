@@ -1,0 +1,7 @@
+name: hexa-lang
+emoji: 💎
+path: ~/core/hexa-lang
+role: The Perfect Number Programming Language
+status: active
+remote: https://github.com/dancinlab/hexa-lang.git
+tags: [language, runtime]

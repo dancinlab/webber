@@ -1,0 +1,7 @@
+name: webber
+emoji: 🕸️
+path: ~/core/webber
+role: standalone 프로젝트 카탈로그·레지스트리
+status: active
+origin: 2026-05-07 신설 (hive 분리 흐름 30+ 누적에 대응)
+tags: [governance, meta]
