@@ -1,0 +1,25 @@
+# hexa.toml — webber package manifest
+#
+# Spec: shared/hexa-lang/hexa-toml-spec.json (version 1.0.0)
+# Distribution target: hx install webber
+# Sibling packages: bedrock, hive, hexa-lang
+
+[package]
+name = "webber"
+version = "0.1.0"
+entry = "cli/webber.hexa"
+description = "🕸️ webber — standalone projects registry. `webber` aggregates --help of all registered projects (web/*.yaml). Sibling to bedrock 🪨 and hive 🐝."
+license = "MIT"
+authors = ["박민우 <nerve011235@gmail.com>"]
+repository = "https://github.com/dancinlab/webber"
+homepage = "https://github.com/dancinlab/webber"
+readme = "README.md"
+keywords = ["registry", "catalog", "monorepo-split", "standalone", "meta"]
+categories = ["meta", "registry", "developer-tools"]
+
+[[bin]]
+name = "webber"
+path = "cli/webber.hexa"
+
+[dependencies]
+hexa-lang = ">=1.0.0"

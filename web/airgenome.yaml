@@ -1,0 +1,6 @@
+name: airgenome
+emoji: 🧬
+path: ~/core/airgenome
+role: OS Genome Scanner
+status: active
+remote: https://github.com/dancinlab/airgenome.git

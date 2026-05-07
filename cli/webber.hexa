@@ -1,0 +1,221 @@
+#!hexa strict
+// webber/cli/webber.hexa — standalone projects registry CLI
+//
+// Default behavior: print usage (same as --help). Aggregate is opt-in via `webber cli`.
+// Subcommands:
+//   (none)     same as --help (usage screen — no accidental 30+ --help blast)
+//   cli        aggregate --help of all registered projects (the main feature)
+//   list       short index (emoji name — role)
+//   --version  print version
+//   --help     usage
+//
+// Resolution: $WEBBER_ROOT env (auto-set by hx shim), else infer from script path.
+
+let VERSION = "0.1.0"
+let HOME = env("HOME")
+let WEBBER_ROOT_ENV = env("WEBBER_ROOT")
+
+fn webber_root() -> str {
+    if WEBBER_ROOT_ENV.len() > 0 { return WEBBER_ROOT_ENV }
+    let inferred = exec("dirname \"$(dirname \"$0\")\" 2>/dev/null || true").trim()
+    if inferred.len() > 0 { return inferred }
+    return HOME + "/core/webber"
+}
+
+let WB = webber_root()
+let WEB_DIR = WB + "/web"
+
+// ─── helpers ───
+
+fn list_projects() -> [str] {
+    let raw = exec("ls -1 " + WEB_DIR + "/*.yaml 2>/dev/null | xargs -n1 -I{} basename {} .yaml | sort").trim()
+    if raw.len() == 0 { return [] }
+    return raw.split("\n")
+}
+
+fn yaml_field(name: str, field: str) -> str {
+    let path = WEB_DIR + "/" + name + ".yaml"
+    let cmd = "grep -E '^" + field + ":' '" + path + "' 2>/dev/null | head -1 | sed 's/^" + field + ": *//; s/^\"//; s/\"$//'"
+    return exec(cmd).trim()
+}
+
+// ─── commands ───
+
+fn cmd_help() {
+    println("🕸️  webber — standalone projects registry CLI")
+    println("")
+    println("Usage:")
+    println("  webber              Show this help")
+    println("  webber cli          Aggregate --help of all registered projects")
+    println("  webber list         Short index (emoji name — role)")
+    println("  webber add <name>   Register ~/core/<name> (auto-detects emoji/role/remote)")
+    println("                      flags: --path PATH  --force")
+    println("  webber --version    Print version")
+    println("  webber --help       This message")
+    println("")
+    println("Registry: " + WEB_DIR)
+}
+
+fn cmd_version() {
+    println("webber " + VERSION)
+}
+
+fn cmd_list() {
+    let projects = list_projects()
+    let n = len(projects)
+    if n == 0 {
+        eprintln("⬡ no projects registered in " + WEB_DIR)
+        exit(1)
+    }
+    let mut i = 0
+    while i < n {
+        let name = projects[i]
+        let role = yaml_field(name, "role")
+        let emoji = yaml_field(name, "emoji")
+        let prefix = if emoji.len() > 0 { emoji + "  " } else { "•  " }
+        if role.len() > 0 {
+            println(prefix + name + " — " + role)
+        } else {
+            println(prefix + name)
+        }
+        i = i + 1
+    }
+}
+
+fn cmd_cli() {
+    let projects = list_projects()
+    let n = len(projects)
+    if n == 0 {
+        eprintln("⬡ no projects registered in " + WEB_DIR)
+        exit(1)
+    }
+    println("🕸️  webber — aggregating --help of " + str(n) + " projects")
+    println("")
+    let mut i = 0
+    while i < n {
+        let name = projects[i]
+        let emoji = yaml_field(name, "emoji")
+        let header_em = if emoji.len() > 0 { emoji + " " } else { "" }
+        println("─── " + header_em + name + " ───")
+        let cmd = "if command -v " + name + " >/dev/null 2>&1; then " + name + " --help 2>&1 || true; else echo '(not installed: " + name + ")'; fi"
+        let out = exec(cmd)
+        println(out.trim())
+        println("")
+        i = i + 1
+    }
+}
+
+fn cmd_add(args: [str]) {
+    let n = len(args)
+    if n < 1 {
+        eprintln("usage: webber add <name> [--path PATH] [--force]")
+        exit(2)
+    }
+    let name = args[0]
+    let mut path = HOME + "/core/" + name
+    let mut force = false
+    let mut i = 1
+    while i < n {
+        if args[i] == "--path" {
+            if i + 1 < n { path = args[i + 1]; i = i + 2 }
+            else { eprintln("--path requires a value"); exit(2) }
+        } else if args[i] == "--force" {
+            force = true; i = i + 1
+        } else {
+            eprintln("unknown flag: " + args[i]); exit(2)
+        }
+    }
+
+    let target = WEB_DIR + "/" + name + ".yaml"
+    let exists = exec("test -f '" + target + "' && echo y || echo n").trim()
+    if exists == "y" && !force {
+        eprintln("⬡ already registered: " + name + " (use --force to overwrite)")
+        exit(1)
+    }
+
+    let dir_ok = exec("test -d '" + path + "' && echo y || echo n").trim()
+    if dir_ok != "y" {
+        eprintln("⬡ project dir not found: " + path)
+        exit(1)
+    }
+
+    // Parse first '# ...' line of README — pattern: "# <emoji> <NAME> — <role>"
+    let title = exec("awk '/^# / {sub(/^# /, \"\"); print; exit}' '" + path + "/README.md' 2>/dev/null").trim()
+    let mut emoji = ""
+    let mut role = ""
+    if title.len() > 0 {
+        let parts = title.split(" — ")
+        if parts.len() >= 2 {
+            role = parts[1]
+            let left = parts[0].split(" ")
+            if left.len() >= 1 { emoji = left[0] }
+        }
+    }
+
+    let remote = exec("git -C '" + path + "' remote get-url origin 2>/dev/null").trim()
+
+    // Build yaml. Use printf for fields that may contain special chars.
+    exec("rm -f '" + target + "'")
+    exec("printf 'name: %s\\n' '" + name + "' >> '" + target + "'")
+    if emoji.len() > 0 {
+        let e_esc = emoji.replace("'", "'\\''")
+        exec("printf 'emoji: %s\\n' '" + e_esc + "' >> '" + target + "'")
+    }
+    exec("printf 'path: ~/core/%s\\n' '" + name + "' >> '" + target + "'")
+    if role.len() > 0 {
+        let r_esc = role.replace("'", "'\\''")
+        exec("printf 'role: %s\\n' '" + r_esc + "' >> '" + target + "'")
+    }
+    exec("printf 'status: active\\n' >> '" + target + "'")
+    if remote.len() > 0 {
+        let rem_esc = remote.replace("'", "'\\''")
+        exec("printf 'remote: %s\\n' '" + rem_esc + "' >> '" + target + "'")
+    }
+
+    println("⬡ added: " + name)
+    if emoji.len() > 0 { println("  emoji: " + emoji) }
+    if role.len() > 0 { println("  role:  " + role) }
+    if remote.len() > 0 { println("  remote: " + remote) }
+    println("  → " + target)
+}
+
+// ─── main ───
+
+fn main() {
+    let _raw = args()
+    let mut _sidx = -1
+    let mut _i = 0
+    while _i < _raw.len() {
+        if _raw[_i].ends_with(".hexa") { _sidx = _i; break }
+        _i = _i + 1
+    }
+    let mut _user_start = 0
+    if _sidx >= 0 { _user_start = _sidx + 1 }
+
+    let mut a: [str] = []
+    let mut _ua = _user_start
+    while _ua < _raw.len() {
+        a = a + [_raw[_ua]]
+        _ua = _ua + 1
+    }
+    let n = len(a)
+
+    if n == 0 { cmd_help(); return }
+
+    let sub = a[0]
+    if sub == "--version" || sub == "-V" || sub == "version" { cmd_version(); return }
+    if sub == "--help" || sub == "-h" || sub == "help" { cmd_help(); return }
+    if sub == "cli" { cmd_cli(); return }
+    if sub == "list" { cmd_list(); return }
+    if sub == "add" {
+        let mut sub_args: [str] = []
+        let mut k = 1
+        while k < n { sub_args = sub_args + [a[k]]; k = k + 1 }
+        cmd_add(sub_args)
+        return
+    }
+
+    eprintln("webber: unknown subcommand '" + sub + "'")
+    eprintln("run 'webber --help' for usage")
+    exit(2)
+}

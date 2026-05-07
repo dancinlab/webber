@@ -11,6 +11,26 @@
 | `roadmap/` | webber 자체 계획 |
 | `state/` | 런타임 산출물 (gitignored) |
 
+## Install
+
+```bash
+hx install webber
+```
+
+`hx`(hexa-lang 패키지 매니저)가 `github.com/dancinlab/webber` 을 자동 발견 → `~/.hx/packages/webber/` 에 클론 → `webber` 시밍.
+
+## Usage
+
+```bash
+webber              # show usage
+webber cli          # aggregate `--help` of all registered projects (the main feature)
+webber list         # short index — emoji name — role
+webber add <name>   # register ~/core/<name> (auto-detects emoji/role/remote from README + git)
+webber --version
+```
+
+`add` 는 `~/core/<name>/README.md` 의 첫 `# <emoji> <NAME> — <role>` 라인과 `git remote get-url origin` 을 자동 파싱해서 `web/<name>.yaml` 작성.
+
 ## 형제
 
 `bedrock` 🪨 (governance 기반) / `hive` 🐝 (모노리포 군집) 와 같은 standalone 위계.
