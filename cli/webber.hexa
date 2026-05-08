@@ -6,6 +6,7 @@
 //   (none)     same as --help (usage screen — no accidental 30+ --help blast)
 //   cli        aggregate --help of all registered projects (the main feature)
 //   list       short index (emoji name — role)
+//   whoami     print author identity (live from `secret get identity.*`)
 //   --version  print version
 //   --help     usage
 //
@@ -48,6 +49,7 @@ fn cmd_help() {
     println("  webber              Show this help")
     println("  webber cli          Aggregate --help of all registered projects")
     println("  webber list         Short index (emoji name — role)")
+    println("  webber whoami       Print author identity (from secret store)")
     println("  webber add <name>   Register ~/core/<name> (auto-detects emoji/role/remote)")
     println("                      flags: --path PATH  --force")
     println("  webber rm <name>    Unregister a project (deletes web/<name>.yaml)")
@@ -81,6 +83,20 @@ fn cmd_list() {
         }
         i = i + 1
     }
+}
+
+fn cmd_whoami() {
+    let name = exec("secret get identity.name 2>/dev/null").trim()
+    let email = exec("secret get identity.email 2>/dev/null").trim()
+    let phone = exec("secret get identity.phone 2>/dev/null").trim()
+    if name.len() == 0 && email.len() == 0 && phone.len() == 0 {
+        eprintln("⬡ no identity registered")
+        eprintln("  set with: secret set identity.name | identity.email | identity.phone")
+        exit(1)
+    }
+    if name.len() > 0  { println("name:  " + name) }
+    if email.len() > 0 { println("email: " + email) }
+    if phone.len() > 0 { println("phone: " + phone) }
 }
 
 fn cmd_cli() {
@@ -225,6 +241,7 @@ fn main() {
     if sub == "--help" || sub == "-h" || sub == "help" { cmd_help(); return }
     if sub == "cli" { cmd_cli(); return }
     if sub == "list" { cmd_list(); return }
+    if sub == "whoami" { cmd_whoami(); return }
     if sub == "add" {
         let mut sub_args: [str] = []
         let mut k = 1
