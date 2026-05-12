@@ -14,20 +14,24 @@
 ## Install
 
 ```bash
-hx install webber
+# 1. Install hexa-lang (ships `hexa` + `hx` package manager)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/dancinlab/hexa-lang/main/install.sh)"
+
+# 2. Install webber
+hx install webber          # global, pulls latest from registry
 ```
 
-`hx`(hexa-lang 패키지 매니저)가 `github.com/dancinlab/webber` 을 자동 발견 → `~/.hx/packages/webber/` 에 클론 → `webber` 시밍.
-
-## Usage
+## Run
 
 ```bash
 webber              # show usage
-webber cli          # aggregate `--help` of all registered projects (the main feature)
-webber list         # short index — emoji name — role
+webber cli          # aggregate --help of all registered projects (the main feature)
+webber list         # short index (emoji name — role)
+webber whoami       # print author identity (from secret store)
 webber add <name>   # register ~/core/<name> (auto-detects emoji/role/remote from README + git)
-webber rm <name>    # unregister (deletes web/<name>.yaml)
-webber --version
+webber rm <name>    # unregister a project (deletes web/<name>.yaml)
+webber --version    # print version
+webber --help       # this message
 ```
 
 `add` 는 `~/core/<name>/README.md` 의 첫 `# <emoji> <NAME> — <role>` 라인과 `git remote get-url origin` 을 자동 파싱해서 `web/<name>.yaml` 작성.
