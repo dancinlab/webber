@@ -47,6 +47,8 @@
   emoji = "🕸️"
   one_liner = "~/core/ standalone-project 카탈로그·레지스트리 — 1 프로젝트 = 1 yaml 파일"
   kind = "hexa-native CLI (project registry + cross-project --help aggregator)"
+  brief = "~/core/ standalone-project registry · webber CLI --help aggregator"
+  parent = "dancinlab"
   repo = "github.com/dancinlab/webber"
   local_path = "~/core/webber/"
   entrypoint = "cli/webber.hexa"
